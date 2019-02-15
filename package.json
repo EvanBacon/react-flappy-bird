@@ -1,30 +1,14 @@
 {
-  "name": "react-native-flappy-bird",
-  "main": "node_modules/expo/AppEntry.js",
-  "private": true,
+  "name": "flappy-bird-demo",
+  "version": "0.0.0",
+  "description": "No description",
   "author": "Evan Bacon",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "eject": "expo eject"
-  },
-  "homepage": "https://evanbacon.github.io/games",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "^30.0.1",
-    "expo-asset-utils": "^0.0.5",
-    "expo-multi-touch": "^0.0.0",
-    "expo-phaser": "^0.0.1-alpha.0",
-    "expo-pixi": "0.3.1",
-    "expo-three": "^3.0.0-alpha.5",
-    "gsap": "^2.0.2",
+    "expo": "^30.0.0",
     "react": "16.3.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
-    "react-navigation": "3.0.0-alpha.14",
-    "react-redux": "^5.1.0",
-    "redux": "^4.0.1",
-    "redux-persist": "^5.10.0",
-    "sat": "^0.7.1",
-    "three": "^0.98.0"
+    "expo-pixi": "0.3.1"
   }
 }
