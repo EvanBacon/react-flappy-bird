@@ -1,1 +1,1 @@
-# react-native-flappy-bird
+# Flappy Bird
