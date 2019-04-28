@@ -1,12 +1,11 @@
-import { Asset } from 'expo';
-import ExpoPixi, { PIXI } from 'expo-pixi';
+import { PIXI } from 'expo-pixi';
 
 async function setupSpriteSheetAsync(resource, spriteSheet) {
-  const asset = Asset.fromModule(resource);
-  await asset.downloadAsync();
+  // const asset = Asset.fromModule(resource);
+  // await asset.downloadAsync();
 
-  console.log({ asset });
-  const texture = ExpoPixi.texture(asset);
+  // console.log({ asset });
+  const texture = await PIXI.Texture.fromExpoAsync(resource);
 
   let textures = {};
   for (const sprite of spriteSheet) {
@@ -15,7 +14,7 @@ async function setupSpriteSheetAsync(resource, spriteSheet) {
 
     try {
       const frame = new PIXI.Rectangle(x, y, width, height);
-      textures[name] = new PIXI.Texture(texture.baseTexture, frame);
+      textures[name] = new global.PIXI.Texture(texture.baseTexture, frame);
     } catch ({ message }) {
       console.error(message);
     }

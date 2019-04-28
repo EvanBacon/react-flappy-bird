@@ -1,9 +1,10 @@
-import ExpoPixi, { PIXI } from 'expo-pixi';
+import { PIXI } from 'expo-pixi';
+import { Sprite, Container, extras } from 'pixi.js';
 import { PixelRatio } from 'react-native';
 
 import setupSpriteSheetAsync from './setupSpriteSheetAsync';
 import sprites from './sprites';
-import source from './spritesheet.png';
+import source from '../assets/spritesheet.png';
 
 const scale = PixelRatio.get();
 
@@ -21,14 +22,16 @@ const Settings = {
   gameSpeed: 40 * 0.25,
 };
 
-class Sprite extends PIXI.Sprite {
+class FlappySprite extends Sprite {
   constructor(...args) {
     super(...args);
     this.scale.set(scale);
   }
 }
 
-class Pipe extends Sprite {
+console.log(PIXI);
+
+class Pipe extends FlappySprite {
   constructor(texture) {
     super(texture);
     this.width = Settings.pipeWidth;
@@ -90,7 +93,7 @@ class Game {
     // Sharp pixels
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-    this.app = ExpoPixi.application({
+    this.app = new PIXI.Application({
       context,
     });
     /*
@@ -114,12 +117,13 @@ class Game {
   };
 
   onAssetsLoaded = () => {
-    this.background = new Sprite(this.textures.background);
+    this.background = new FlappySprite(this.textures.background);
+    this.background.scale.set(scale);
     this.background.position.x = 0;
     this.background.position.y = 0;
     this.background.width = Settings.width;
     this.background.height = Settings.height;
-    this.pipeContainer = new PIXI.Container();
+    this.pipeContainer = new Container();
 
     this.ground = new PIXI.extras.TilingSprite(
       this.textures.ground,

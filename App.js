@@ -2,7 +2,7 @@ import { GLView } from 'expo';
 import * as React from 'react';
 import { TouchableWithoutFeedback, Text, View } from 'react-native';
 
-import Game from './game';
+import Game from './src/game';
 
 export default class App extends React.Component {
   state = {
@@ -26,20 +26,24 @@ export default class App extends React.Component {
           />
         </TouchableWithoutFeedback>
 
-        <Text
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '10%',
-            right: 0,
-            textAlign: 'center',
-            color: 'white',
-            fontSize: 48,
-          }}
-        >
-          {this.state.score}
-        </Text>
+        <Score>{this.state.score}</Score>
       </View>
     );
   }
 }
+
+const Score = ({ children }) => (
+  <Text
+    style={{
+      position: 'absolute',
+      left: 0,
+      top: '10%',
+      right: 0,
+      textAlign: 'center',
+      color: 'white',
+      fontSize: 48,
+    }}
+  >
+    {children}
+  </Text>
+);
