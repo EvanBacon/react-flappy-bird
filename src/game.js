@@ -30,6 +30,16 @@ class FlappySprite extends Sprite {
   }
 }
 
+class Background extends FlappySprite {
+  constructor(texture) {
+    super(texture);
+    this.position.x = 0;
+    this.position.y = 0;
+    this.width = Settings.width;
+    this.height = Settings.height;
+  }
+}
+
 class Pipe extends FlappySprite {
   constructor(texture) {
     super(texture);
@@ -110,11 +120,7 @@ class Game {
   };
 
   onAssetsLoaded = () => {
-    this.background = new FlappySprite(this.textures.background);
-    this.background.position.x = 0;
-    this.background.position.y = 0;
-    this.background.width = Settings.width;
-    this.background.height = Settings.height;
+    this.background = new Background(this.textures.background);
     this.pipeContainer = new Container();
 
     this.ground = new TilingSprite(
