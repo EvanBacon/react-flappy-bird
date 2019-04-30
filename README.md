@@ -6,7 +6,7 @@
 
     Flappy Bird 🐦
 
-[**Flappy Bird**](https://flappybacon.netlify.com) with React Native
+Universal [**Flappy Bird**](https://flappybacon.netlify.com) with Expo
 
 </h1>
 
