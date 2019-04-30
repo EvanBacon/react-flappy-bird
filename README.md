@@ -11,3 +11,5 @@
 </h1>
 
 Expo & PIXI.js
+
+Try it now: https://flappybacon.netlify.com
