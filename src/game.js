@@ -118,7 +118,6 @@ class Game {
 
   onAssetsLoaded = () => {
     this.background = new FlappySprite(this.textures.background);
-    this.background.scale.set(scale);
     this.background.position.x = 0;
     this.background.position.y = 0;
     this.background.width = Settings.width;
