@@ -4,7 +4,7 @@
   <img src="assets/icons/preview.jpeg"/>
 </p>
 
-    [Flappy Bird 🐦][fb]
+    Flappy Bird 🐦
 
 Universal Expo App
 
