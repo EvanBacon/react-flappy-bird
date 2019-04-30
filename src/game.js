@@ -1,10 +1,11 @@
 import { PIXI } from 'expo-pixi';
 import { Sprite, Container, extras } from 'pixi.js';
 import { AsyncStorage, PixelRatio } from 'react-native';
-
 import setupSpriteSheetAsync from './setupSpriteSheetAsync';
 import sprites from './sprites';
 import source from '../assets/spritesheet.png';
+
+const { TilingSprite, AnimatedSprite } = extras;
 
 const scale = PixelRatio.get();
 
@@ -38,7 +39,7 @@ class Pipe extends FlappySprite {
   }
 }
 
-class Bird extends PIXI.extras.AnimatedSprite {
+class Bird extends AnimatedSprite {
   constructor(textures) {
     super(textures);
     this.animationSpeed = 0.2;
@@ -71,16 +72,9 @@ class Bird extends PIXI.extras.AnimatedSprite {
   };
 }
 
-let localStorage = {
-  getItem() {
-    return 0;
-  },
-  setItem() {},
-};
-
 class Game {
   pipes = [];
-  stopAnimating = false;
+  stopAnimating = true;
   isStarted = false;
   isDead = false;
   score = 0;
@@ -94,6 +88,7 @@ class Game {
     this.app = new PIXI.Application({
       context,
     });
+    this.app.ticker.add(this.animate);
     /*
     this.app.stage.interactive = true;
     this.app.stage.buttonMode = true;
@@ -122,7 +117,7 @@ class Game {
     this.background.height = Settings.height;
     this.pipeContainer = new Container();
 
-    this.ground = new PIXI.extras.TilingSprite(
+    this.ground = new TilingSprite(
       this.textures.ground,
       Settings.width,
       Settings.groundHeight,
@@ -143,7 +138,7 @@ class Game {
       this.app.stage.addChild(child),
     );
 
-    this.animate();
+    this.stopAnimating = false;
   };
 
   onPress = () => {
@@ -165,14 +160,9 @@ class Game {
   };
 
   animate = () => {
-    if (this.raf) {
-      cancelAnimationFrame(this.raf);
-      this.raf = undefined;
-    }
     if (this.stopAnimating) {
       return;
     }
-    this.raf = requestAnimationFrame(this.animate);
 
     if (!this.isDead) {
       if (Math.abs(this.ground.tilePosition.x) > this.ground.width) {
