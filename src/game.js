@@ -30,6 +30,15 @@ class FlappySprite extends Sprite {
   }
 }
 
+class Ground extends TilingSprite {
+  constructor(texture) {
+    super(texture, Settings.width, Settings.groundHeight);
+    this.tileScale.set(scale * 2);
+    this.position.x = 0;
+    this.position.y = Settings.skyHeight;
+  }
+}
+
 class Background extends FlappySprite {
   constructor(texture) {
     super(texture);
@@ -123,14 +132,7 @@ class Game {
     this.background = new Background(this.textures.background);
     this.pipeContainer = new Container();
 
-    this.ground = new TilingSprite(
-      this.textures.ground,
-      Settings.width,
-      Settings.groundHeight,
-    );
-    this.ground.tileScale.set(scale * 2);
-    this.ground.position.x = 0;
-    this.ground.position.y = Settings.skyHeight;
+    this.ground = new Ground(this.textures.ground);
 
     const bird_texture_array = [
       this.textures['bird_000'],
