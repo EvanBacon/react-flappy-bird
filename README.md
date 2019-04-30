@@ -4,12 +4,14 @@
   <img src="assets/icons/preview.jpeg"/>
 </p>
 
-    Flappy Bird 🐦
+    [Flappy Bird 🐦][fb]
 
-Universal [**Flappy Bird**](https://flappybacon.netlify.com) with Expo
+Universal Expo App
 
 </h1>
 
 Expo & PIXI.js
 
 Try it now: https://flappybacon.netlify.com
+
+[fb]: https://flappybacon.netlify.com
