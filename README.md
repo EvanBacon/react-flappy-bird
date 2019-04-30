@@ -6,8 +6,8 @@
 
     Flappy Bird 🐦
 
-**Flappy Bird** with React Native
-</h1>
+[**Flappy Bird**](https://flappybacon.netlify.com) with React Native
 
+</h1>
 
 Expo & PIXI.js
