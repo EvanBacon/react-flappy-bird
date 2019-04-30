@@ -6,8 +6,6 @@ async function setupSpriteSheetAsync(resource, spriteSheet) {
   let textures = {};
   for (const sprite of spriteSheet) {
     const { name, x, y, width, height } = sprite;
-    console.log(x, y, width, height);
-
     try {
       const frame = new Rectangle(x, y, width, height);
       textures[name] = new global.PIXI.Texture(texture.baseTexture, frame);

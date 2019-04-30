@@ -1,9 +1,10 @@
 import { PIXI } from 'expo-pixi';
-import { Sprite, Container, extras } from 'pixi.js';
-import { AsyncStorage, Platform, PixelRatio } from 'react-native';
+import { Container, extras, Sprite } from 'pixi.js';
+import { AsyncStorage, PixelRatio } from 'react-native';
+
+import source from '../assets/spritesheet.png';
 import setupSpriteSheetAsync from './setupSpriteSheetAsync';
 import sprites from './sprites';
-import source from '../assets/spritesheet.png';
 
 const { TilingSprite, AnimatedSprite } = extras;
 
@@ -48,6 +49,22 @@ class Background extends FlappySprite {
     this.height = Settings.height;
   }
 }
+
+function boxesIntersect(a, b, paddingA = 0) {
+  const ab = a.getBounds();
+  ab.x += paddingA;
+  ab.width -= paddingA * 2;
+  ab.y += paddingA;
+  ab.height -= paddingA * 2;
+
+  const bb = b.getBounds();
+  return (
+    ab.x + ab.width > bb.x &&
+    ab.x < bb.x + bb.width &&
+    ab.y + ab.height > bb.y &&
+    ab.y < bb.y + bb.height
+  );
+}
 class PipeContainer extends Container {
   pipes = [];
   pipeIndex = 0;
@@ -55,7 +72,46 @@ class PipeContainer extends Container {
   constructor(pipeTexture) {
     super();
     this.pipeTexture = pipeTexture;
+    this.position.x = Settings.width + Settings.pipeWidth / 2;
   }
+
+  tryAddingNewPipe = () => {
+    if (!this.pipes.length) return;
+    const { pipe } = this.pipes[this.pipes.length - 1];
+    if (-pipe.position.x >= Settings.pipeHorizontalGap) {
+      this.addNewPipe();
+    }
+  };
+
+  moveAll = () => {
+    let score = 0;
+    for (let index = 0; index < this.pipes.length; index++) {
+      this.move(index);
+      if (this.tryScoringPipe(index)) {
+        score += 1;
+      }
+    }
+    return score;
+  };
+
+  tryScoringPipe = index => {
+    const group = this.pipes[index];
+
+    if (
+      !group.scored &&
+      this.toGlobal(group.pipe.position).x < Settings.playerHorizontalPosition
+    ) {
+      group.scored = true;
+      return true;
+    }
+    return false;
+  };
+
+  move = index => {
+    const { pipe, pipe2 } = this.pipes[index];
+    pipe.position.x -= Settings.gameSpeed;
+    pipe2.position.x -= Settings.gameSpeed;
+  };
 
   addNewPipe = () => {
     const pipeGroup = {};
@@ -75,7 +131,7 @@ class PipeContainer extends Container {
     );
 
     pipe2.position.y = pipe.height + pipe.position.y + Settings.pipeVerticalGap;
-    pipe.position.x = pipe2.position.x = 600 * scale;
+    pipe.position.x = pipe2.position.x = 0;
 
     pipeGroup.upper = pipe.position.y + pipe.height / 2;
     pipeGroup.lower = pipeGroup.upper + Settings.pipeVerticalGap;
@@ -84,18 +140,34 @@ class PipeContainer extends Container {
 
     this.addChild(pipe);
     this.addChild(pipe2);
-    this.pipeIndex += 1;
-    if (this.pipeIndex > 3) {
+    this.pipes.push(pipeGroup);
+    this.tryRemovingLastGroup();
+  };
+
+  tryRemovingLastGroup = () => {
+    if (
+      this.pipes[0].pipe.position.x + Settings.pipeWidth / 2 >
+      Settings.width
+    ) {
       this.pipes.shift();
     }
+  };
 
-    this.pipes.push(pipeGroup);
+  setXforGroup = (index, x) => {
+    const { pipe, pipe2 } = this.pipes[index];
+    pipe.position.x = x;
+    pipe2.position.x = x;
+  };
+
+  getX = index => {
+    const { pipe } = this.pipes[index];
+    return this.toGlobal(pipe.position).x;
   };
 
   restart = () => {
     this.pipeIndex = 0;
     this.pipes = [];
-    this.pipeContainer = [];
+    this.children = [];
   };
 }
 
@@ -146,7 +218,6 @@ class Game {
   isStarted = false;
   isDead = false;
   score = 0;
-  bestScore = 0;
 
   constructor(context) {
     // Sharp pixels
@@ -167,14 +238,12 @@ class Game {
     */
 
     Settings.width = this.app.renderer.width;
+    Settings.pipeScorePosition = -(
+      Settings.width - Settings.playerHorizontalPosition
+    );
     Settings.height = this.app.renderer.height;
     Settings.skyHeight = Settings.height - Settings.groundHeight;
-    Settings.pipeHorizontalGap = Settings.width - Settings.pipeWidth - 100;
-    console.log(
-      'pipeHorizontalGap',
-      Settings.pipeHorizontalGap,
-      Settings.width,
-    );
+    Settings.pipeHorizontalGap = Settings.pipeWidth * 5;
     this.loadAsync();
   }
 
@@ -182,28 +251,11 @@ class Game {
   resize = ({ width, height, scale }) => {
     const parent = this.app.view.parentNode;
     // Resize the renderer
-    this.app.renderer.resize(width * scale, height * scale);
+    // this.app.renderer.resize(width * scale, height * scale);
 
-    // // Recalculate
-    // this.screenScale = width * 0.00266666667;
-    // // console.log('SCREEN SCALE ', this.screenScale);
-    // // this.app.stage.scale = new PIXI.Point(this.screenScale, this.screenScale);
-    // this.platformInterval = this.app.renderer.height / Settings.platformCount;
-
-    // this.recalculatePlatforms();
-    // this.app.stage.updateTransform();
-    // for (const child of this.app.stage.children) {
-    //   child.scale = this.screenScale;
-    //   child.updateTransform();
-    // }
-
-    if (Platform.OS === 'web') {
-      this.app.view.style.width = width;
-      this.app.view.style.height = height;
-    }
-    // if (this.background) {
-    //   this.background.width = this.width;
-    //   this.background.height = this.height;
+    // if (Platform.OS === 'web') {
+    //   this.app.view.style.width = width;
+    //   this.app.view.style.height = height;
     // }
   };
 
@@ -279,39 +331,21 @@ class Game {
         this.hitPipe();
       }
 
-      for (let i = 0; i < this.pipeContainer.pipes.length; i++) {
-        let currentPileContainer = this.pipeContainer.pipes[i];
-        currentPileContainer.pipe.position.x -= Settings.gameSpeed;
-        currentPileContainer.pipe2.position.x -= Settings.gameSpeed;
+      const points = this.pipeContainer.moveAll();
+      if (points) {
+        this.score += points;
+        this.onScore(this.score);
+      }
+      this.pipeContainer.tryAddingNewPipe();
 
+      const padding = 15;
+      for (const group of this.pipeContainer.pipes) {
+        const { pipe, pipe2, upper, lower } = group;
         if (
-          i == this.pipeContainer.pipes.length - 1 &&
-          currentPileContainer.pipe.position.x <= Settings.pipeHorizontalGap
+          boxesIntersect(this.bird, pipe, padding) ||
+          boxesIntersect(this.bird, pipe2, padding)
         ) {
-          this.pipeContainer.addNewPipe();
-        }
-
-        if (
-          currentPileContainer.pipe.position.x ==
-          Settings.playerHorizontalPosition
-        ) {
-          this.updateScore();
-        }
-
-        if (
-          currentPileContainer.pipe.position.x + Settings.pipeWidth / 2 >=
-            Settings.playerHorizontalPosition - this.bird.width / 2 &&
-          currentPileContainer.pipe.position.x - Settings.pipeWidth / 2 <=
-            Settings.playerHorizontalPosition + this.bird.width / 2
-        ) {
-          if (
-            this.bird.position.y - this.bird.height / 2 <
-              currentPileContainer.upper ||
-            this.bird.position.y + this.bird.height / 2 >
-              currentPileContainer.lower
-          ) {
-            this.hitPipe();
-          }
+          this.hitPipe();
         }
       }
     }
@@ -343,7 +377,7 @@ class Game {
 async function saveHighScoreAsync(score) {
   const highScore = await getHighScoreAsync();
   if (score > highScore) {
-    await AsyncStorage.setItem('hiscore', this.bestScore);
+    await AsyncStorage.setItem('hiscore', highScore);
   }
   return {
     score: Math.max(score, highScore),
