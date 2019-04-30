@@ -1,6 +1,6 @@
 import { PIXI } from 'expo-pixi';
 import { Sprite, Container, extras } from 'pixi.js';
-import { AsyncStorage, PixelRatio } from 'react-native';
+import { AsyncStorage, Platform, PixelRatio } from 'react-native';
 import setupSpriteSheetAsync from './setupSpriteSheetAsync';
 import sprites from './sprites';
 import source from '../assets/spritesheet.png';
@@ -48,6 +48,56 @@ class Background extends FlappySprite {
     this.height = Settings.height;
   }
 }
+class PipeContainer extends Container {
+  pipes = [];
+  pipeIndex = 0;
+
+  constructor(pipeTexture) {
+    super();
+    this.pipeTexture = pipeTexture;
+  }
+
+  addNewPipe = () => {
+    const pipeGroup = {};
+    const pipe = new Pipe(this.pipeTexture);
+    const pipe2 = new Pipe(this.pipeTexture);
+    pipe.rotation = Math.PI;
+
+    const maxPosition =
+      Settings.skyHeight -
+      Settings.minPipeHeight -
+      Settings.pipeVerticalGap -
+      pipe.height / 2;
+    const minPosition = -(pipe.height / 2 - Settings.minPipeHeight);
+
+    pipe.position.y = Math.floor(
+      Math.random() * (maxPosition - minPosition + 1) + minPosition,
+    );
+
+    pipe2.position.y = pipe.height + pipe.position.y + Settings.pipeVerticalGap;
+    pipe.position.x = pipe2.position.x = 600 * scale;
+
+    pipeGroup.upper = pipe.position.y + pipe.height / 2;
+    pipeGroup.lower = pipeGroup.upper + Settings.pipeVerticalGap;
+    pipeGroup.pipe = pipe;
+    pipeGroup.pipe2 = pipe2;
+
+    this.addChild(pipe);
+    this.addChild(pipe2);
+    this.pipeIndex += 1;
+    if (this.pipeIndex > 3) {
+      this.pipes.shift();
+    }
+
+    this.pipes.push(pipeGroup);
+  };
+
+  restart = () => {
+    this.pipeIndex = 0;
+    this.pipes = [];
+    this.pipeContainer = [];
+  };
+}
 
 class Pipe extends FlappySprite {
   constructor(texture) {
@@ -92,12 +142,10 @@ class Bird extends AnimatedSprite {
 }
 
 class Game {
-  pipes = [];
   stopAnimating = true;
   isStarted = false;
   isDead = false;
   score = 0;
-  pipeIndex = 0;
   bestScore = 0;
 
   constructor(context) {
@@ -106,6 +154,9 @@ class Game {
 
     this.app = new PIXI.Application({
       context,
+      autoResize: false,
+      width: context.drawingBufferWidth / 1,
+      height: context.drawingBufferHeight / 1,
     });
     this.app.ticker.add(this.animate);
     /*
@@ -119,9 +170,42 @@ class Game {
     Settings.height = this.app.renderer.height;
     Settings.skyHeight = Settings.height - Settings.groundHeight;
     Settings.pipeHorizontalGap = Settings.width - Settings.pipeWidth - 100;
-
+    console.log(
+      'pipeHorizontalGap',
+      Settings.pipeHorizontalGap,
+      Settings.width,
+    );
     this.loadAsync();
   }
+
+  // Resize function window
+  resize = ({ width, height, scale }) => {
+    const parent = this.app.view.parentNode;
+    // Resize the renderer
+    this.app.renderer.resize(width * scale, height * scale);
+
+    // // Recalculate
+    // this.screenScale = width * 0.00266666667;
+    // // console.log('SCREEN SCALE ', this.screenScale);
+    // // this.app.stage.scale = new PIXI.Point(this.screenScale, this.screenScale);
+    // this.platformInterval = this.app.renderer.height / Settings.platformCount;
+
+    // this.recalculatePlatforms();
+    // this.app.stage.updateTransform();
+    // for (const child of this.app.stage.children) {
+    //   child.scale = this.screenScale;
+    //   child.updateTransform();
+    // }
+
+    if (Platform.OS === 'web') {
+      this.app.view.style.width = width;
+      this.app.view.style.height = height;
+    }
+    // if (this.background) {
+    //   this.background.width = this.width;
+    //   this.background.height = this.height;
+    // }
+  };
 
   loadAsync = async () => {
     this.textures = await setupSpriteSheetAsync(source, sprites);
@@ -130,17 +214,15 @@ class Game {
 
   onAssetsLoaded = () => {
     this.background = new Background(this.textures.background);
-    this.pipeContainer = new Container();
-
+    this.pipeContainer = new PipeContainer(this.textures.pipe);
     this.ground = new Ground(this.textures.ground);
 
-    const bird_texture_array = [
+    this.bird = new Bird([
       this.textures['bird_000'],
       this.textures['bird_001'],
       this.textures['bird_002'],
       this.textures['bird_001'],
-    ];
-    this.bird = new Bird(bird_texture_array);
+    ]);
 
     [this.background, this.pipeContainer, this.ground, this.bird].map(child =>
       this.app.stage.addChild(child),
@@ -162,7 +244,7 @@ class Game {
       this.isStarted = true;
       this.score = 0;
       this.onScore(this.score);
-      this.addNewPipe();
+      this.pipeContainer.addNewPipe();
     }
     this.bird.speedY = Settings.playerFallSpeed;
   };
@@ -197,16 +279,16 @@ class Game {
         this.hitPipe();
       }
 
-      for (let i = 0; i < this.pipes.length; i++) {
-        let currentPileContainer = this.pipes[i];
+      for (let i = 0; i < this.pipeContainer.pipes.length; i++) {
+        let currentPileContainer = this.pipeContainer.pipes[i];
         currentPileContainer.pipe.position.x -= Settings.gameSpeed;
         currentPileContainer.pipe2.position.x -= Settings.gameSpeed;
 
         if (
-          i == this.pipes.length - 1 &&
+          i == this.pipeContainer.pipes.length - 1 &&
           currentPileContainer.pipe.position.x <= Settings.pipeHorizontalGap
         ) {
-          this.addNewPipe();
+          this.pipeContainer.addNewPipe();
         }
 
         if (
@@ -239,12 +321,10 @@ class Game {
     this.isStarted = false;
     this.isDead = false;
     this.stopAnimating = false;
-    this.pipeIndex = 0;
     this.score = 0;
     this.onScore(this.score);
     this.bird.restart();
-    this.pipeContainer.children = [];
-    this.pipes = [];
+    this.pipeContainer.restart();
     this.animate();
   };
 
@@ -256,42 +336,7 @@ class Game {
   updateScore = () => {
     this.score += 1;
     this.onScore(this.score);
-    //TODO: UPDATE UI
-  };
-
-  addNewPipe = () => {
-    const pipeGroup = {};
-    const pipe = new Pipe(this.textures.pipe);
-    const pipe2 = new Pipe(this.textures.pipe);
-    pipe.rotation = Math.PI;
-
-    const maxPosition =
-      Settings.skyHeight -
-      Settings.minPipeHeight -
-      Settings.pipeVerticalGap -
-      pipe.height / 2;
-    const minPosition = -(pipe.height / 2 - Settings.minPipeHeight);
-
-    pipe.position.y = Math.floor(
-      Math.random() * (maxPosition - minPosition + 1) + minPosition,
-    );
-
-    pipe2.position.y = pipe.height + pipe.position.y + Settings.pipeVerticalGap;
-    pipe.position.x = pipe2.position.x = 600 * scale;
-
-    pipeGroup.upper = pipe.position.y + pipe.height / 2;
-    pipeGroup.lower = pipeGroup.upper + Settings.pipeVerticalGap;
-    pipeGroup.pipe = pipe;
-    pipeGroup.pipe2 = pipe2;
-
-    this.pipeContainer.addChild(pipe);
-    this.pipeContainer.addChild(pipe2);
-    this.pipeIndex += 1;
-    if (this.pipeIndex > 3) {
-      this.pipes.shift();
-    }
-
-    this.pipes.push(pipeGroup);
+    // TODO: UPDATE UI
   };
 }
 
