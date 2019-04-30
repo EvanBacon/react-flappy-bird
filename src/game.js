@@ -1,6 +1,6 @@
 import { PIXI } from 'expo-pixi';
 import { Sprite, Container, extras } from 'pixi.js';
-import { PixelRatio } from 'react-native';
+import { AsyncStorage, PixelRatio } from 'react-native';
 
 import setupSpriteSheetAsync from './setupSpriteSheetAsync';
 import sprites from './sprites';
@@ -28,8 +28,6 @@ class FlappySprite extends Sprite {
     this.scale.set(scale);
   }
 }
-
-console.log(PIXI);
 
 class Pipe extends FlappySprite {
   constructor(texture) {
@@ -193,7 +191,7 @@ class Game {
         this.bird.rotation > Math.PI / 2 &&
         this.bird.position.y > Settings.skyHeight - this.bird.height / 2
       ) {
-        this.showDialog();
+        saveHighScoreAsync(this.score);
         this.stopAnimating = true;
       }
     } else {
@@ -297,19 +295,25 @@ class Game {
 
     this.pipes.push(pipeGroup);
   };
+}
 
-  showDialog = () => {
-    const storeHi = localStorage.getItem('hiscore');
-
-    if (storeHi > this.bestScore) {
-      this.bestScore = storeHi;
-    }
-
-    if (this.score > this.bestScore) {
-      this.bestScore = this.score;
-      localStorage.setItem('hiscore', this.bestScore);
-    }
+async function saveHighScoreAsync(score) {
+  const highScore = await getHighScoreAsync();
+  if (score > highScore) {
+    await AsyncStorage.setItem('hiscore', this.bestScore);
+  }
+  return {
+    score: Math.max(score, highScore),
+    isBest: score > highScore,
   };
+}
+
+async function getHighScoreAsync() {
+  const score = await AsyncStorage.getItem('hiscore');
+  if (score) {
+    return parseInt(score);
+  }
+  return 0;
 }
 
 export default Game;
