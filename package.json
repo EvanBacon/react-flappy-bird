@@ -1,10 +1,15 @@
 {
-  "name": "flappy-bird-demo",
+  "name": "flappy-bird",
   "version": "0.0.0",
-  "description": "No description",
+  "description": "A side-scroller where the player controls a bird, attempting to fly between columns of green pipes without hitting them.",
   "author": "Evan Bacon",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "serve": "serve ./web-build",
+    "prepublish:web": "expo build:web",
+    "publish:web": "netlify deploy"
+  },
   "dependencies": {
     "expo": "^33.0.0-alpha.web.1",
     "expo-pixi": "^1.1.0",
@@ -14,6 +19,7 @@
     "react-native-web": "^0.11.2"
   },
   "devDependencies": {
-    "babel-preset-expo": "^5.1.1"
+    "babel-preset-expo": "^5.1.1",
+    "serve": "^11.0.0"
   }
 }

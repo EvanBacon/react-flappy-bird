@@ -4,9 +4,12 @@ import { Text, TouchableWithoutFeedback, View } from 'react-native';
 
 import DisableBodyScrollingView from './components/DisableBodyScrollingView';
 import ExpoButton from './components/ExpoButton';
+import GithubButton from './components/GithubButton';
 import KeyboardControlsView from './components/KeyboardControlsView';
+import logyo from './components/logyo';
 import Game from './src/game';
 
+logyo('https://twitter.com/baconbrix');
 export default class App extends React.Component {
   state = {
     score: 0,
@@ -14,7 +17,9 @@ export default class App extends React.Component {
   render() {
     const { style, ...props } = this.props;
     return (
-      <View style={[{ flex: 1, overflow: 'hidden' }, style]}>
+      <View
+        style={[{ width: '100vw', height: '100vh', overflow: 'hidden' }, style]}
+      >
         <DisableBodyScrollingView>
           <KeyboardControlsView
             onKeyDown={({ code }) => {
@@ -43,6 +48,7 @@ export default class App extends React.Component {
           </KeyboardControlsView>
         </DisableBodyScrollingView>
         <ExpoButton />
+        <GithubButton />
       </View>
     );
   }

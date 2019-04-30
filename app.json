@@ -1,16 +1,17 @@
 {
   "expo": {
     "name": "Flappy Bird",
-    "description": "No description",
+    "description": "A side-scroller where the player controls a bird, attempting to fly between columns of green pipes without hitting them.",
     "slug": "flappy-bird",
     "privacy": "unlisted",
     "sdkVersion": "32.0.0",
     "version": "1.0.0",
     "orientation": "portrait",
-    "primaryColor": "#cccccc",
+    "primaryColor": "#91DE78",
     "icon": "./assets/icons/app-icon.png",
     "splash": {
-      "image": "./assets/icons/app-icon.png"
+      "image": "./assets/icons/app-icon.png",
+      "backgroundColor": "#91DE78"
     },
     "packagerOpts": {
       "assetExts": ["ttf", "mp4", "otf", "xml"]

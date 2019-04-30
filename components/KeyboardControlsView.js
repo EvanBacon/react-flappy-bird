@@ -1,6 +1,6 @@
 import React from 'react';
 
-class KeyboardControlsView extends React.Component {
+class KeyboardControlsView extends React.PureComponent {
   static defaultProps = {
     onKeyDown: () => {},
     onKeyUp: () => {},

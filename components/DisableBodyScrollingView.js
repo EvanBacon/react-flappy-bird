@@ -14,7 +14,7 @@ const freezeBody = e => {
   e.preventDefault();
 };
 
-class DisableBodyScrollingView extends React.Component {
+class DisableBodyScrollingView extends React.PureComponent {
   componentWillUnmount() {
     if (this.view) {
       this.view.removeEventListener('touchstart', freezeBody, false);
